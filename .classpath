@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/commons-cli-1.3.1.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/groovy-2.4.7.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/groovy-json-2.4.7.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/groovy-xml-2.4.7.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/httpclient-4.5.2.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/httpcore-4.4.4.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/jcl-over-slf4j-1.7.21.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/slf4j-api-1.7.21.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/slf4j-nop-1.7.21.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/soa-model-core-1.6.0.jar"/>
+	<classpathentry kind="lib" path="/Users/joshi/Downloads/soa-model-distribution-1.6.0-bin/lib/soa-model-distribution-1.6.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
