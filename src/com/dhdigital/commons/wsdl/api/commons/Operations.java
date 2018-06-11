@@ -10,6 +10,7 @@ public class Operations {
 	String operationName;
 	String requestElement;
 	String responseElement;
+	boolean override; 
 
 	public String getOperationName() {
 		return operationName;
@@ -34,4 +35,13 @@ public class Operations {
 	public void setResponseElement(String responseElement) {
 		this.responseElement = responseElement;
 	}
+
+	public boolean isOverride() {
+		return override;
+	}
+
+	public void setOverride(boolean override) {
+		this.override = override;
+	}
+	
 }

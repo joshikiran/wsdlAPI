@@ -44,31 +44,58 @@ public class Operation {
 		List<Part> parts = null;
 		String ipMsg = null;
 		String opMsg = null;
-		com.dhdigital.commons.wsdl.membrane.Part partObj = new com.dhdigital.commons.wsdl.membrane.Part();
-
+		com.dhdigital.commons.wsdl.membrane.Part partObj = null;
 		for (Operations op : config.getOperations()) {
 			logger.debug("Creating operation for {}", op.getOperationName());
-			com.predic8.wsdl.Operation pObj = portType.getOperation(op.getOperationName());
-			if (pObj == null) {
+			com.predic8.wsdl.Operation opObj = portType.getOperation(op.getOperationName());
+			ipMsg = op.getOperationName() + "Request";
+			opMsg = op.getOperationName() + "Response";
+			partObj = new com.dhdigital.commons.wsdl.membrane.Part();
+			if (opObj == null) {
 				operation = portType.newOperation(op.getOperationName());
 				{
 					logger.debug("Preparing Input message for Operation");
-					ipMsg = op.getOperationName() + "Request";
 					parts = new ArrayList<Part>();
-					parts.add(partObj.createPart(op.getRequestElement(), schemaMap));
+					parts.add(partObj.createOrModifyPart(op.getRequestElement(), schemaMap, null));
 					operation.newInput(ipMsg).newMessage(ipMsg).setParts(parts);
 					logger.debug("Added part information to Input Message");
 				}
-
 				{
 					logger.debug("Preparing Output message of Operation");
-					opMsg = op.getOperationName() + "Response";
 					parts = new ArrayList<Part>();
-					parts.add(partObj.createPart(op.getResponseElement(), schemaMap));
+					parts.add(partObj.createOrModifyPart(op.getResponseElement(), schemaMap, null));
 					operation.newOutput(opMsg).newMessage(opMsg).setParts(parts);
 				}
 			} else {
-				logger.debug("Modifying operation is not currently available {}", op.getOperationName());
+				logger.debug("Trying to modify the operation {}", op.getOperationName());
+				logger.debug("Operation Modificiation flag is set to {}", op.isOverride());
+				if (op.isOverride()) {
+					logger.debug("Operation Modification is in process");
+					Part opPartObj = null;
+					// Modifying the request element
+					try {
+						parts = opObj.getInput().getMessage().getParts();
+						opPartObj = parts.get(0);
+						partObj.createOrModifyPart(op.getRequestElement(), schemaMap, opPartObj);
+						logger.debug("Modified the request element");
+					} catch (Exception e) {
+						logger.error("Exception while retrieving part object from the operation.");
+						throw new RuntimeException("Exception while retrieving part object from the operation.");
+					}
+					// Modifying the response element
+					try {
+						parts = opObj.getOutput().getMessage().getParts();
+						opPartObj = parts.get(0);
+						partObj.createOrModifyPart(op.getResponseElement(), schemaMap, opPartObj);
+						logger.debug("Modified the response element");
+					} catch (Exception e) {
+						logger.error("Exception while retrieving part object from the operation.");
+						throw new RuntimeException("Exception while retrieving part object from the operation.");
+					}
+
+				} else {
+					logger.debug("Modifying operation it not applicable for the current operation");
+				}
 			}
 		}
 		return portType;

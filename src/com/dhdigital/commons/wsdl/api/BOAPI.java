@@ -22,9 +22,9 @@ public class BOAPI {
 	public static void main(String args[]) {
 		BOConfiguration config = new BOConfiguration();
 		List<Operations> operations = new ArrayList<Operations>();
-		Operations op = config.createNewOperation("GetFundInformation", "CaronteServices.xsd", "CaronteServices.xsd");
+		Operations op = config.createNewOperation("GetFundInformation", "TradexServices.xsd", "TradexServices.xsd", true);
 		operations.add(op);
-		op = config.createNewOperation("GetMFPortfolioList", "CaronteServices.xsd", "TradexServices.xsd");
+		op = config.createNewOperation("GetMFPortfolioList", "TradexServices.xsd", "TradexServices.xsd", true);
 		operations.add(op);
 		config.setOperations(operations);
 		config.setXsds(config.getXsdInformation());

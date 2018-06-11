@@ -28,9 +28,11 @@ public class BOConfiguration extends WSDLConfiguration {
 	 * @param responseXSD
 	 * @return
 	 */
-	public Operations createNewOperation(String operationName, String requestXSD, String responseXSD) {
+	public Operations createNewOperation(String operationName, String requestXSD, String responseXSD,
+			boolean override) {
 		Operations op = new Operations();
 		op.setOperationName(operationName);
+		op.setOverride(override);
 		xsds.add(requestXSD);
 		xsds.add(responseXSD);
 

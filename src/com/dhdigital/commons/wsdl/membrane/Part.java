@@ -32,22 +32,57 @@ public class Part {
 	 * having same name for elements in multiple schemas. But if that is not the
 	 * case, API can be told the element names without prefixes, in which case it
 	 * would try to find out particular element in all possible schemas available
-	 * for the WSDL. Since currently modification of Operation is not in the scope,
-	 * we would be going ahead with only creating a part, as this would be present
-	 * only during creation of operation.
+	 * for the WSDL. This method would also take care of updating existing part
+	 * information with messages being sent.
 	 * 
 	 * @param op
 	 * @param message
 	 * @param schemaMap
+	 * @param partObj
 	 * @return
 	 */
-	public com.predic8.wsdl.Part createPart(String message, Map<String, Schema> schemaMap) {
+	public com.predic8.wsdl.Part createOrModifyPart(String message, Map<String, Schema> schemaMap,
+			com.predic8.wsdl.Part partObj) {
 		logger.debug("Msg is {} ", message);
+		Schema sc = null;
+		Element ele = null;
+		Map<String, String> partNs = null;
+		Map<String, Object> schemaElements = null;
+		schemaElements = getSchemaForMessage(message, schemaMap);
+		sc = (Schema) schemaElements.get("SCHEMA");
+		ele = (Element) schemaElements.get("ELEMENT");
+
+		// Preparing Request Part
+		partNs = new HashMap<>();
+		// Attaching namespaces for Part
+		partNs.put("q1", sc.getTargetNamespace());
+		if (null == partObj)
+			partObj = new com.predic8.wsdl.Part();
+		partObj.setName("parameters");
+		partObj.setProperty("namespaces", partNs);
+		partObj.setElement(ele);
+		return partObj;
+	}
+
+	/**
+	 * This method would respond both the schema part and element part from provided
+	 * schemas in the application. A message here in the request part is represented
+	 * in two ways one with prefix and other a direct. Prefixed message would
+	 * indicate that the element should be referred to a particular schema and not
+	 * all the schemas. This would be helpful if same element name is present in
+	 * more than one XSD, in that case we can convey in message part by mentioning
+	 * the prefix.
+	 * 
+	 * @param message
+	 * @param schemaMap
+	 * @return
+	 */
+	private Map<String, Object> getSchemaForMessage(String message, Map<String, Schema> schemaMap) {
+		Map<String, Object> retObj = new HashMap<String, Object>();
 		Schema sc = null;
 		String elementName = null;
 		if (message.indexOf(":") >= 0) {
 			String[] msgParts = message.split(":");
-
 			{
 				// Validating msgParts
 				if (msgParts.length < 2) {
@@ -61,26 +96,17 @@ public class Part {
 			elementName = message;
 			sc = getSchemaFromAll(schemaMap, elementName);
 		}
-		Map<String, String> partNs = null;
-		// Preparing Request Part
-		partNs = new HashMap<>();
-		// Get the schema for msgParts[0]
 		if (sc == null) {
 			logger.error("Unable to find schema reference to the element that has to be mapped");
 			throw new RuntimeException("Unable to find element from the added schemas " + elementName);
 		}
-		// Attaching namespaces for Part
-		partNs.put("q1", sc.getTargetNamespace());
-		com.predic8.wsdl.Part partObj = new com.predic8.wsdl.Part();
-		partObj.setName("parameters");
-		partObj.setProperty("namespaces", partNs);
-		Element ele = sc.getElement(elementName);
-		if (null == ele) {
+		if (null == sc.getElement(elementName)) {
 			logger.error("Unable to find the requested element in the schemas provided by you");
 			throw new RuntimeException("Unable to find requested element in the schemas provided for " + message);
 		}
-		partObj.setElement(ele);
-		return partObj;
+		retObj.put("ELEMENT", sc.getElement(elementName));
+		retObj.put("SCHEMA", sc);
+		return retObj;
 	}
 
 	/**
