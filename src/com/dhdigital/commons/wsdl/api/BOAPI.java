@@ -22,15 +22,16 @@ public class BOAPI {
 	public static void main(String args[]) {
 		BOConfiguration config = new BOConfiguration();
 		List<Operations> operations = new ArrayList<Operations>();
-		Operations op = config.createNewOperation("GetFundInformation", "TradexServices.xsd", "TradexServices.xsd", true);
-		operations.add(op);
-		op = config.createNewOperation("GetMFPortfolioList", "TradexServices.xsd", "TradexServices.xsd", true);
-		operations.add(op);
+		config.createNewOperation("GetCustomerRisk", "CustomerRiskRequest.xsd", "CustomerRiskResponse.xsd", false);
+		config.createNewOperation("CreateMFPortfolio", "MFPortfolioRequest.xsd", "MFPortfolioResponse.xsd", false);
+		config.createNewOperation("AddMFPortfolioCurrency", "AddMFPortfolioCurrencyRequest.xsd", "AddMFPortfolioCurrencyResponse.xsd", true);
+		operations  = config.getOperations();
+		
 		config.setOperations(operations);
 		config.setXsds(config.getXsdInformation());
-		config.setDefaultFolderLocationForWSDLs("/Users/joshi/Documents/Joshi/Office/Projects/DH/WSDLAPI");
-		config.setWsdlName("First");
-		config.setTargetNamespace("http://predic8.com/wsdl/AddService/1/");
+		config.setDefaultFolderLocationForWSDLs("/Users/joshi/Documents/Joshi/Office/Projects/DH/WSDLAPI/useCases");
+		config.setWsdlName("TradexService");
+		config.setTargetNamespace("http://corp.dhdigital.com/middlewareservices/tradexservice/1.0/");
 
 		MembraneAPI membObj = new MembraneAPI(MembraneAPI.getMembraneAPIBuilder());
 		membObj = membObj.generateWSDL(config);

@@ -200,6 +200,7 @@ public class MembraneAPI extends WSDLResponseObject implements WSDLOperations {
 		{
 			// Validate all operations
 			for (Operations op : config.getOperations()) {
+
 				if (null == op.getOperationName() || "".equals(op.getOperationName()))
 					throw new RuntimeException("Operation Name cannot be empty. Please correct it.");
 
@@ -208,11 +209,12 @@ public class MembraneAPI extends WSDLResponseObject implements WSDLOperations {
 
 				if (null == op.getResponseElement() || "".equals(op.getResponseElement()))
 					throw new RuntimeException("Response Element of the operation cannot be empty");
+
 			}
 		}
 
 		{
-			// Validating the WSDL if present
+			/*// Validating the WSDL if present
 			String fullWsdlPath = config.getDefaultFolderLocationForWSDLs() + File.separatorChar + config.getWsdlName()
 					+ ".wsdl";
 			File file = new File(fullWsdlPath);
@@ -220,7 +222,7 @@ public class MembraneAPI extends WSDLResponseObject implements WSDLOperations {
 				WSDLParser parser = new WSDLParser();
 				parser.parse(fullWsdlPath);
 				logger.debug("Validating the WSDL and the WSDL provided is valid.");
-			}
+			}*/
 		}
 	}
 

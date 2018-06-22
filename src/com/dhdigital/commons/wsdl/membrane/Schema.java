@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.dhdigital.commons.wsdl.config.WSDLConfiguration;
 import com.predic8.schema.SchemaParser;
+import com.predic8.wsdl.Definitions;
 
 /**
  * All methods pertaining to WSDL Schema are to be kept here.
@@ -34,6 +35,20 @@ public class Schema {
 			schemas.put(xsd, schema);
 		}
 		return schemas;
+	}
+
+	/**
+	 * The goal of this method is to clean up unwanted xsds which are being used as
+	 * imports in the definitions used. The current release does not have this being
+	 * implemented i.e., there might as well be chances that the imports which were
+	 * not relevant to the elements in the entire xsds are still present.
+	 * 
+	 * @param defs
+	 * @return
+	 */
+	public Definitions modifyXSDs(Definitions defs) {
+
+		return defs;
 	}
 
 }

@@ -81,7 +81,7 @@ public class WSDL {
 				portType = wsdl.newPortType(config.getWsdlName());
 				logger.debug("Creating operations for WSDL");
 				op = new com.dhdigital.commons.wsdl.membrane.Operation();
-				portType = op.getOperations(portType, config, schemaMap);
+				portType = op.getOperations(wsdl, localSchema, portType, config, schemaMap);
 			}
 		} catch (Exception e) {
 			logger.error("Exception while generating WSDL using Membrane API with details {}", e);
@@ -113,6 +113,7 @@ public class WSDL {
 		Import schemaImport = null;
 		PortType portType = null;
 		com.dhdigital.commons.wsdl.membrane.Operation op = null;
+		Schema localSchema = null;
 		try {
 			logger.debug("Creating/Modifying WSDL with wsdlName {} and namespace as {}", config.getWsdlName(),
 					config.getTargetNamespace());
@@ -124,7 +125,8 @@ public class WSDL {
 					logger.debug("Trying to modify Schema information in the WSDL");
 
 					wsdlSchemas = wsdl.getSchemas();
-					imports = wsdlSchemas.get(0).getImports();
+					localSchema = wsdlSchemas.get(0);
+					imports = localSchema.getImports();
 					Set<String> schemas = config.getXsds().keySet();
 					for (String schema : schemas) {
 						// Importing the schemas present
@@ -145,7 +147,7 @@ public class WSDL {
 				logger.debug("Getting the port type from the existing WSDL");
 				portType = wsdl.getPortType(config.getWsdlName());
 				op = new com.dhdigital.commons.wsdl.membrane.Operation();
-				portType = op.getOperations(portType, config, schemaMap);
+				portType = op.getOperations(wsdl, localSchema, portType, config, schemaMap);
 			}
 
 		} catch (Exception e) {
@@ -178,7 +180,8 @@ public class WSDL {
 				logger.debug("Validating the WSDL and the WSDL provided is valid.");
 			}
 		} catch (Exception e) {
-			logger.error("Exception while parsing the WSDL. Hence application will proceed with overwriting the WSDL");
+			logger.error("Exception while parsing the WSDL. Hence application will not proceed further.");
+			throw new RuntimeException("WSDL Provided was not valid and hence application will not proceed further.");
 		}
 		return wsdl;
 	}
@@ -220,5 +223,4 @@ public class WSDL {
 		}
 		return wsdlPath;
 	}
-
 }

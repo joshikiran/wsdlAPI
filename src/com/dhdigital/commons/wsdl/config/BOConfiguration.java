@@ -1,7 +1,9 @@
 package com.dhdigital.commons.wsdl.config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +19,7 @@ import com.dhdigital.commons.wsdl.api.commons.Operations;
 public class BOConfiguration extends WSDLConfiguration {
 
 	private static Set<String> xsds = new HashSet<>();
+	private static List<Operations> operations = new ArrayList<Operations>();
 
 	/**
 	 * This would create a new Operations object along with request and response
@@ -28,21 +31,30 @@ public class BOConfiguration extends WSDLConfiguration {
 	 * @param responseXSD
 	 * @return
 	 */
-	public Operations createNewOperation(String operationName, String requestXSD, String responseXSD,
-			boolean override) {
-		Operations op = new Operations();
-		op.setOperationName(operationName);
-		op.setOverride(override);
-		xsds.add(requestXSD);
-		xsds.add(responseXSD);
+	public void createNewOperation(String operationName, String requestXSD, String responseXSD, boolean override) {
+		Operations op = null;
+		if (override) {
+			op = new Operations();
+			op.setOperationName(operationName);
+			op.setOverride(override);
+			xsds.add(requestXSD);
+			xsds.add(responseXSD);
 
-		String element = requestXSD.replace(".xsd", "");
-		op.setRequestElement(element);
+			String element = requestXSD.replace(".xsd", "");
+			op.setRequestElement(element);
 
-		element = responseXSD.replace(".xsd", "");
-		op.setResponseElement(element);
+			element = responseXSD.replace(".xsd", "");
+			op.setResponseElement(element);
+			operations.add(op);
+		}
+	}
 
-		return op;
+	/**
+	 * All the operations which are to be either created/modified are to be returned
+	 * 
+	 */
+	public List<Operations> getOperations() {
+		return operations;
 	}
 
 	/**

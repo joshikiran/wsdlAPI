@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.dhdigital.commons.wsdl.api.commons.Operations;
 import com.dhdigital.commons.wsdl.config.WSDLConfiguration;
 import com.predic8.schema.Schema;
+import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Part;
 import com.predic8.wsdl.PortType;
 
@@ -26,19 +27,18 @@ public class Operation {
 
 	/**
 	 * 
-	 * This method would basically take care of either creating or modifying
-	 * existing operations. Modifying existing operation currently is not part of
-	 * this API's scope but would be available in subsequent releases. What this
-	 * method would be doing is if the operation is already available in existing
-	 * portType, it simply skips that operation and proceed with next operation
-	 * present in the wsdl configuration.
+	 * This method would basically take care of both creating and modifying
+	 * existing operations.
 	 * 
+	 * @param defs
+	 * @param localSchema
 	 * @param portType
 	 * @param config
 	 * @param schemaMap
 	 * @return
 	 */
-	public PortType getOperations(PortType portType, WSDLConfiguration config, Map<String, Schema> schemaMap) {
+	public PortType getOperations(Definitions defs, Schema localSchema, PortType portType, WSDLConfiguration config,
+			Map<String, Schema> schemaMap) {
 		com.predic8.wsdl.Operation operation = null;
 		logger.debug("Creating Operation information for the WSDL");
 		List<Part> parts = null;
@@ -48,7 +48,7 @@ public class Operation {
 		for (Operations op : config.getOperations()) {
 			logger.debug("Creating operation for {}", op.getOperationName());
 			com.predic8.wsdl.Operation opObj = portType.getOperation(op.getOperationName());
-			ipMsg = op.getOperationName() + "Request";
+			ipMsg = op.getOperationName();
 			opMsg = op.getOperationName() + "Response";
 			partObj = new com.dhdigital.commons.wsdl.membrane.Part();
 			if (opObj == null) {
@@ -56,14 +56,16 @@ public class Operation {
 				{
 					logger.debug("Preparing Input message for Operation");
 					parts = new ArrayList<Part>();
-					parts.add(partObj.createOrModifyPart(op.getRequestElement(), schemaMap, null));
+					parts.add(partObj.createOrModifyPart(defs, localSchema, ipMsg, op.getRequestElement(), schemaMap,
+							null));
 					operation.newInput(ipMsg).newMessage(ipMsg).setParts(parts);
 					logger.debug("Added part information to Input Message");
 				}
 				{
 					logger.debug("Preparing Output message of Operation");
 					parts = new ArrayList<Part>();
-					parts.add(partObj.createOrModifyPart(op.getResponseElement(), schemaMap, null));
+					parts.add(partObj.createOrModifyPart(defs, localSchema, opMsg, op.getResponseElement(), schemaMap,
+							null));
 					operation.newOutput(opMsg).newMessage(opMsg).setParts(parts);
 				}
 			} else {
@@ -76,7 +78,8 @@ public class Operation {
 					try {
 						parts = opObj.getInput().getMessage().getParts();
 						opPartObj = parts.get(0);
-						partObj.createOrModifyPart(op.getRequestElement(), schemaMap, opPartObj);
+						partObj.createOrModifyPart(defs, localSchema, ipMsg, op.getRequestElement(), schemaMap,
+								opPartObj);
 						logger.debug("Modified the request element");
 					} catch (Exception e) {
 						logger.error("Exception while retrieving part object from the operation.");
@@ -86,7 +89,8 @@ public class Operation {
 					try {
 						parts = opObj.getOutput().getMessage().getParts();
 						opPartObj = parts.get(0);
-						partObj.createOrModifyPart(op.getResponseElement(), schemaMap, opPartObj);
+						partObj.createOrModifyPart(defs, localSchema, opMsg, op.getResponseElement(), schemaMap,
+								opPartObj);
 						logger.debug("Modified the response element");
 					} catch (Exception e) {
 						logger.error("Exception while retrieving part object from the operation.");

@@ -7,8 +7,14 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dhdigital.commons.wsdl.api.commons.Utils;
+import com.predic8.schema.ComplexType;
 import com.predic8.schema.Element;
 import com.predic8.schema.Schema;
+import com.predic8.schema.Sequence;
+import com.predic8.wsdl.Definitions;
+
+import groovy.xml.QName;
 
 /**
  * 
@@ -17,9 +23,11 @@ import com.predic8.schema.Schema;
  * @author joshi
  *
  */
+@SuppressWarnings("unchecked")
 public class Part {
 
 	private static Logger logger = LoggerFactory.getLogger(Part.class);
+	private Utils utils = new Utils();
 
 	/**
 	 * 
@@ -41,44 +49,91 @@ public class Part {
 	 * @param partObj
 	 * @return
 	 */
-	public com.predic8.wsdl.Part createOrModifyPart(String message, Map<String, Schema> schemaMap,
-			com.predic8.wsdl.Part partObj) {
+	public com.predic8.wsdl.Part createOrModifyPart(Definitions defs, Schema localSchema, String elementName,
+			String message, Map<String, Schema> schemaMap, com.predic8.wsdl.Part partObj) {
 		logger.debug("Msg is {} ", message);
-		Schema sc = null;
 		Element ele = null;
 		Map<String, String> partNs = null;
-		Map<String, Object> schemaElements = null;
-		schemaElements = getSchemaForMessage(message, schemaMap);
-		sc = (Schema) schemaElements.get("SCHEMA");
-		ele = (Element) schemaElements.get("ELEMENT");
+		ele = getSchemaElementForMessage(message, schemaMap);
 
 		// Preparing Request Part
 		partNs = new HashMap<>();
 		// Attaching namespaces for Part
-		partNs.put("q1", sc.getTargetNamespace());
+		partNs.put("tns", localSchema.getTargetNamespace());
 		if (null == partObj)
 			partObj = new com.predic8.wsdl.Part();
 		partObj.setName("parameters");
 		partObj.setProperty("namespaces", partNs);
-		partObj.setElement(ele);
+
+		// Create or Modify element from local Schema
+		Element localElement = createOrModifySchemaElement(defs, localSchema, elementName, ele);
+		partObj.setElement(localElement);
 		return partObj;
 	}
 
 	/**
-	 * This method would respond both the schema part and element part from provided
-	 * schemas in the application. A message here in the request part is represented
-	 * in two ways one with prefix and other a direct. Prefixed message would
-	 * indicate that the element should be referred to a particular schema and not
-	 * all the schemas. This would be helpful if same element name is present in
-	 * more than one XSD, in that case we can convey in message part by mentioning
-	 * the prefix.
+	 * Method to either create a local schema element or modify existing element
+	 * with the reference element provided to the method.
+	 * 
+	 * A wrapper element must be defined as a complex type that is a sequence of
+	 * elements. Each child element in that sequence will be generated as a
+	 * parameter in the service interface. The name of the input wrapper element
+	 * must be the same as the operation name. The name of the output wrapper
+	 * element should be (but doesn’t have to be) the operation name appended with
+	 * "Response" (e.g., if the operation name is "add", the output wrapper element
+	 * should be called "addResponse").
+	 * 
+	 * @param defs
+	 * @param localSchema
+	 * @param elementName
+	 * @param refElement
+	 * @return
+	 */
+	private Element createOrModifySchemaElement(Definitions defs, Schema localSchema, String elementName,
+			Element refElement) {
+		Element ele = null;
+		ele = localSchema.getElement(elementName);
+		ComplexType complexType = null;
+		Sequence sequence = null;
+		Element refEle = null;
+		Map<String, Object> eleNs = null;
+
+		if (null == ele) {
+			// Have to create a new element with reference
+			ele = localSchema.newElement(elementName);
+			ele.setName(elementName);
+			complexType = ele.newComplexType();
+			sequence = complexType.newSequence();
+			refEle = sequence.newElement(refElement.getName());
+		} else {
+			// Modifying existing local schema element
+			complexType = (ComplexType) ele.getEmbeddedType();
+			sequence = complexType.getSequence();
+			refEle = sequence.getElements().get(0);
+		}
+		Map<String, Object> ns = (Map<String, Object>) defs.getProperty("namespaces");
+		eleNs = utils.getNs(ns, refElement.getName(), refElement.getNamespaceUri());
+		defs.setProperty("namespaces", eleNs);
+		refEle.setRef(new QName(refElement.getNamespaceUri(), refElement.getName()));
+		refEle.setProperty("namespaces", eleNs);
+
+		return ele;
+	}
+
+	/**
+	 * This method would respond with the element part from provided schemas in the
+	 * application. A message here in the request part is represented in two ways
+	 * one with prefix and other a direct. Prefixed message would indicate that the
+	 * element should be referred to a particular schema and not all the schemas.
+	 * This would be helpful if same element name is present in more than one XSD,
+	 * in that case we can convey in message part by mentioning the prefix.
 	 * 
 	 * @param message
 	 * @param schemaMap
 	 * @return
 	 */
-	private Map<String, Object> getSchemaForMessage(String message, Map<String, Schema> schemaMap) {
-		Map<String, Object> retObj = new HashMap<String, Object>();
+	private Element getSchemaElementForMessage(String message, Map<String, Schema> schemaMap) {
+		Element element = null;
 		Schema sc = null;
 		String elementName = null;
 		if (message.indexOf(":") >= 0) {
@@ -104,9 +159,8 @@ public class Part {
 			logger.error("Unable to find the requested element in the schemas provided by you");
 			throw new RuntimeException("Unable to find requested element in the schemas provided for " + message);
 		}
-		retObj.put("ELEMENT", sc.getElement(elementName));
-		retObj.put("SCHEMA", sc);
-		return retObj;
+		element = sc.getElement(elementName);
+		return element;
 	}
 
 	/**
